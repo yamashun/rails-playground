@@ -1,0 +1,54 @@
+services:
+  rails:
+    build:
+      context: .
+      dockerfile: Dockerfile-for-docker-compose
+    volumes:
+      - bundle:/usr/local/bundle
+      - .:/rails
+    ports:
+      - 3000:3000
+    env_file:
+      - 'config/env_files/local/.env.local.docker-compose'
+    depends_on:
+      - mysql
+      - redis
+    tty: true
+    stdin_open: true
+
+  rails-test:
+    build:
+      context: .
+      dockerfile: Dockerfile-for-docker-compose
+    command: ["sleep", "infinity"]
+    volumes:
+      - bundle:/usr/local/bundle
+      - .:/rails
+    env_file:
+      - 'config/env_files/local/.env.test'
+    depends_on:
+      - mysql
+      - redis
+    tty: true
+    stdin_open: true
+
+
+  redis:
+    image: redis
+
+  mysql:
+    image: mysql:8.0
+    platform: linux/x86_64
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 3306:3306
+
+volumes:
+  bundle:
+    driver: local
+  db:
+    driver: local
